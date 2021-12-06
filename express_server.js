@@ -8,9 +8,14 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.send("hello!");
+  res.send("hello!"); //sends hello on home path.
+});
+
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase); //sends the urlDatabase to url.json path
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listen on port ${PORT}!`);
-});
+}); 
+
