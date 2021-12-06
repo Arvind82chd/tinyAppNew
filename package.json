@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Arvind82chd/tinyAppNew/issues"
   },
-  "homepage": "https://github.com/Arvind82chd/tinyAppNew#readme"
+  "homepage": "https://github.com/Arvind82chd/tinyAppNew#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
