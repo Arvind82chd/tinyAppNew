@@ -26,11 +26,17 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars); //renders the urls_index page to /urls path
 })
 
+// rout for rendering urls_new.ejs
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+});
+
 // second route
 app.get('/urls/:shortURL', (req, res) => { //:notation to represent the value of shorturl in browser path
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase.shortURL }
   res.render('urls_show', templateVars);
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listen on port ${PORT}!`);
