@@ -64,24 +64,39 @@ app.get('/u/:shortURL', (req, res) => {
 
 
 //POST:
+
 //does the main function of the whole app generating and assigning shortURL.
 app.post('/urls', (req, res) => {
   console.log(req.body);
   const shortURL = generateRandomString();//generates a random string and asigns it to shortURL
   
   urlDatabase[shortURL] = req.body.longURL; //adds the value captured from ejs form for longURL and gives it the rangom string before saving
-
+  
   //urlDatabase = { shortURL: shortURL, longURL: req.body.longURL }; //updates the urlDatabase
   res.redirect(`/urls/${shortURL}`);
   //res.send('ok');
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const shortURL = req.body.shortURL;
+  const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL]; //deletes the shortURL data from database
 
   res.redirect('/urls');
+});
+
+app.post('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;//when picking up values from only the path as parameters
+  console.log(shortURL);
+  //const longURL = req.body.newURL;
+  //const templateVars = { shortURL: shortURL, longURL: longURL}
+  urlDatabase[shortURL] = req.body.newURL;// urldatabase updated with the new value of long url from form entry.
+  // console.log(urlDatabase[shortURL]);
+  // console.log(req.body.newURL);
+
+  res.redirect(`/urls`)
 })
+
+
 
 //app.post('/')
 
