@@ -64,6 +64,7 @@ app.get('/u/:shortURL', (req, res) => {
 
 
 //POST:
+//does the main function of the whole app generating and assigning shortURL.
 app.post('/urls', (req, res) => {
   console.log(req.body);
   const shortURL = generateRandomString();//generates a random string and asigns it to shortURL
@@ -74,6 +75,13 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
   //res.send('ok');
 });
+
+app.post('/urls/:shortURL/delete', (req, res) => {
+  const shortURL = req.body.shortURL;
+  delete urlDatabase[shortURL]; //deletes the shortURL data from database
+
+  res.redirect('/urls');
+})
 
 //app.post('/')
 
