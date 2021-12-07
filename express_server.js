@@ -41,9 +41,9 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars); //renders the urls_index page to /urls path
 })
 
-// rout for rendering urls_new.ejs
+// route for rendering urls_new.ejs
 app.get('/urls/new', (req, res) => {
-  const templateVars = { shortURL: generateRandomString(), longURL: req.params.longURL };//adds the short url from generated string & longURL from the ejs page.
+ 
   res.render('urls_new');
 });
 
@@ -53,12 +53,23 @@ app.get('/urls/:shortURL', (req, res) => { //:notation to represent the value of
   res.render('urls_show', templateVars);
 });
 
+app.get('/u/:shortURL', (req, res) => {
+  const shortURL = req.body.shortURL;
+  const longURL = urlDatabase.shortURL; //gets the longURL against the shortURL key from urlDatabase
+  res.redirect(`http://${longURL}`);
+})
+
 
 //POST:
 app.post('/urls', (req, res) => {
   console.log(req.body);
-  res.send('ok');
-})
+  const shortURL = generateRandomString();//generates a random string and asigns it to shortURL
+  urlDatabase[shortURL] = { longURL: req.body.longURL }; //adds the value captured from ejs form for longURL and gives it the rangom string before saving
+  res.redirect(`/urls/${shortURL}`);
+  //res.send('ok');
+});
+
+//app.post('/')
 
 app.listen(PORT, () => {
   console.log(`Example app listen on port ${PORT}!`);
