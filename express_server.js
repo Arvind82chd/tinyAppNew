@@ -14,6 +14,19 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 
 
 //Functions:
@@ -46,12 +59,12 @@ app.get('/urls', (req, res) => {
   
   const templateVars = { urls: urlDatabase, username: req.cookies["username"] };//defines the database object as a variable templateVars.
   res.render('urls_index', templateVars); //renders the urls_index page to /urls path
-})
+});
 
 // route for rendering urls_new.ejs
 app.get('/urls/new', (req, res) => {
-  
-  res.render('urls_new', req.cookies["username"]);
+  const templateVars = {urls: urlDatabase, username: req.cookies["username"] };
+  res.render('urls_new', templateVars);
 });
 
 // second route
@@ -65,6 +78,11 @@ app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL]; //gets the longURL against the shortURL key from urlDatabase
   res.redirect(longURL);
+});
+
+app.get('/register', (req, res) => {
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  res.render('register', templateVars);
 });
 
 
@@ -103,8 +121,8 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //post for cookie
 app.post('/login', (req, res) => {
-  const value = req.body.username;
-  res.cookie('username', value);
+  const templateVars = { urls: urlDatabase, username: req.body.username,}
+  res.cookie('username', templateVars);
   res.redirect('/urls');
 });
 
@@ -112,7 +130,24 @@ app.post('/login', (req, res) => {
 //post to logout
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
-  return res.redirect('/urls');
+  res.redirect('/urls');
+});
+
+//post registration handler
+app.post('/register', (req, res) => {
+  const userId = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  const newUser = { id: userId, email: email, password: password};
+
+  users[userId] = newUser;
+
+  res.cookie('user_id', users[userId].id);
+  console.log(newUser);
+  console.log(users);
+  console.log(userId);
+  console.log(users[userId]);
+  res.redirect('/urls');
 });
 
 //app.post('/')
