@@ -14,6 +14,8 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
+
 //Functions:
 
 function generateRandomString() { //picked this technique from a mentor last time
@@ -41,6 +43,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
+  
   const templateVars = { urls: urlDatabase, username: req.cookies["username"] };//defines the database object as a variable templateVars.
   res.render('urls_index', templateVars); //renders the urls_index page to /urls path
 })
@@ -102,20 +105,17 @@ app.post('/urls/:shortURL', (req, res) => {
 app.post('/login', (req, res) => {
   const value = req.body.username;
   res.cookie('username', value);
-
   res.redirect('/urls');
 });
+
 
 //post to logout
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
-  // res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
-
-
 //app.post('/')
-
 app.listen(PORT, () => {
   console.log(`Example app listen on port ${PORT}!`);
 }); 
