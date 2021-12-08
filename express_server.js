@@ -1,10 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser'); //this converts the request body from buffer into a string
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 5000;
 
 app.set("view engine", "ejs"); //ejs set as view engine
 app.use(bodyParser.urlencoded({extended: true})); //will add data to the req obj under key: body hence input field data will be available in req.body.longURL which canbe stored
+app.use(cookieParser());
 
 // Database:
 let urlDatabase = {
@@ -39,20 +41,20 @@ app.get("/hello", (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };//defines the database object as a variable templateVars.
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };//defines the database object as a variable templateVars.
   res.render('urls_index', templateVars); //renders the urls_index page to /urls path
 })
 
 // route for rendering urls_new.ejs
 app.get('/urls/new', (req, res) => {
- 
-  res.render('urls_new');
+  
+  res.render('urls_new', req.cookies["username"]);
 });
 
 // second route
 app.get('/urls/:shortURL', (req, res) => { //:notation to represent the value of shorturl in browser path
   const shortURL = req.params.shortURL; //params for getting the value during get
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL] }; //always use [] when using variable to fetch value in object.
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], username: req.cookies["username"] }; //always use [] when using variable to fetch value in object.
   res.render('urls_show', templateVars);
 });
 
@@ -94,7 +96,21 @@ app.post('/urls/:shortURL', (req, res) => {
   // console.log(req.body.newURL);
 
   res.redirect(`/urls`)
-})
+});
+
+//post for cookie
+app.post('/login', (req, res) => {
+  const value = req.body.username;
+  res.cookie('username', value);
+
+  res.redirect('/urls');
+});
+
+//post to logout
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  // res.redirect('/urls');
+});
 
 
 
