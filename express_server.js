@@ -47,30 +47,32 @@ app.get("/", (req, res) => {
   res.send("hello!"); //sends hello on home path.
 });
 
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase); //sends the urlDatabase to url.json path
-// });
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase); //sends the urlDatabase to url.json path
+});
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n"); //sends this html body to hello page
 });
 
 app.get('/urls', (req, res) => {
-  
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };//defines the database object as a variable templateVars.
+  const userId = req.cookies["user_id"];
+  const templateVars = { urls: urlDatabase, userId: userId, user: users[userId] };//defines the database object as a variable templateVars.
   res.render('urls_index', templateVars); //renders the urls_index page to /urls path
 });
 
 // route for rendering urls_new.ejs
 app.get('/urls/new', (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies["username"] };
+  const userId = req.cookies["user_id"];
+  const templateVars = {urls: urlDatabase, userId: userId, user: users[userId] };
   res.render('urls_new', templateVars);
 });
 
 // second route
 app.get('/urls/:shortURL', (req, res) => { //:notation to represent the value of shorturl in browser path
   const shortURL = req.params.shortURL; //params for getting the value during get
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], username: req.cookies["username"] }; //always use [] when using variable to fetch value in object.
+  const userId = req.cookies["user_id"];
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], userId: userId, user: users[userId] }; //always use [] when using variable to fetch value in object.
   res.render('urls_show', templateVars);
 });
 
@@ -81,7 +83,9 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  console.log(req.cookies["user_id"]);
+  const userId = req.cookies["user_id"];// needs to be defined as we are using it to identify in users database.
+  const templateVars = { urls: urlDatabase, userId: req.cookies["user_id"], user: users[userId] };
   res.render('register', templateVars);
 });
 
@@ -121,15 +125,15 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //post for cookie
 app.post('/login', (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.body.username,}
-  res.cookie('username', templateVars);
+  const templateVars = { urls: urlDatabase, userId: req.body.userId, user: users[userId]}
+  res.cookie('user_id', templateVars);
   res.redirect('/urls');
 });
 
 
 //post to logout
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
@@ -142,7 +146,7 @@ app.post('/register', (req, res) => {
 
   users[userId] = newUser;
 
-  res.cookie('user_id', users[userId].id);
+  res.cookie('user_id', userId);//This one assigns the value to the cookie named user_id as random value as first registeration.
   console.log(newUser);
   console.log(users);
   console.log(userId);
