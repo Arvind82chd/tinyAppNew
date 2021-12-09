@@ -63,17 +63,30 @@ const authenticateUser = function (email, password) {
 //if yes then grant access to pages
 //if no then ask to login or register
 
-function ensureAuthenticated(req, res, next, email, password) {
-  // const email = req.body.email;
-  // const password = req.body.password;
-  if(authenticateUser(email, password)) {//isAuthenticated()) {
-    return next();
-  } else {
-    res.status(403);
-    res.send(`Kindly login first`);
-   // return res.redirect('/login');
-  }
+function ensureAuthenticated(req, res, next) {
+ 
+  const user = req.cookies["user_id"];
+  const userEmail = users[user].email;
+  const userPassword = users[user].password;
+
+  if (user) {
+    if(authenticateUser(userEmail, userPassword)) {
+      return next();
+    } else {
+      res.status(403);
+      res.send(`Kindly login first`);
+     
+    }
+  } return res.redirect('/login');
+  
 };
+
+// function permissions (req, res, next) {
+//   const userId = req.cookies.user_id;
+//   if (userId) {
+//     return next();
+//   }
+// }
 
 
 // ALL GETs:
