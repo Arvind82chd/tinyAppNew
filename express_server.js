@@ -27,8 +27,6 @@ const users = {
   }
 }
 
-
-
 //Functions:
 
 function generateRandomString() { //picked this technique from a mentor last time
@@ -43,7 +41,7 @@ function generateRandomString() { //picked this technique from a mentor last tim
 const findUserByKey = function (email) {
   for (let user in users) {
     const userId = users[user];
-    console.log(userId.email)
+   // console.log(userId.email)
     if (userId.email === email) {
       return userId;
     }
@@ -57,6 +55,24 @@ const authenticateUser = function (email, password) {
     return user;
   } return false;
 };
+
+//All Permissions:
+
+//disable acess to pages
+// check if loged in or not
+//if yes then grant access to pages
+//if no then ask to login or register
+
+function ensureAuthenticated(req, res, next) {
+  if(authenticateUser()) {//isAuthenticated()) {
+    return next();
+  } else {
+    res.status(403);
+    res.send(`Kindly login first`);
+   // return res.redirect('/login');
+  }
+};
+
 
 // ALL GETs:
 
@@ -77,28 +93,28 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n"); //sends this html body to hello page
 });
 
-app.get('/urls', (req, res) => {
+app.get('/urls', ensureAuthenticated, (req, res) => {
   const userId = req.cookies["user_id"];
   const templateVars = { urls: urlDatabase, userId: userId, user: users[userId] };//defines the database object as a variable templateVars.
   res.render('urls_index', templateVars); //renders the urls_index page to /urls path
 });
 
 // route for rendering urls_new.ejs
-app.get('/urls/new', (req, res) => {
+app.get('/urls/new', ensureAuthenticated, (req, res) => {
   const userId = req.cookies["user_id"];
   const templateVars = {urls: urlDatabase, userId: userId, user: users[userId] };
   res.render('urls_new', templateVars);
 });
 
 // second route
-app.get('/urls/:shortURL', (req, res) => { //:notation to represent the value of shorturl in browser path
+app.get('/urls/:shortURL', ensureAuthenticated, (req, res) => { //:notation to represent the value of shorturl in browser path
   const shortURL = req.params.shortURL; //params for getting the value during get
   const userId = req.cookies["user_id"];
   const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL], userId: userId, user: users[userId] }; //always use [] when using variable to fetch value in object.
   res.render('urls_show', templateVars);
 });
 
-app.get('/u/:shortURL', (req, res) => {
+app.get('/u/:shortURL', ensureAuthenticated, (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL]; //gets the longURL against the shortURL key from urlDatabase
   res.redirect(longURL);
@@ -106,7 +122,7 @@ app.get('/u/:shortURL', (req, res) => {
 
 //Get register endpoint:
 app.get('/register', (req, res) => {
-  console.log(req.cookies["user_id"]);
+  //console.log(req.cookies["user_id"]);
   const userId = req.cookies["user_id"];// needs to be defined as we are using it to identify in users database.
   const templateVars = { urls: urlDatabase, userId: req.cookies["user_id"], user: users[userId] };
   res.render('register', templateVars);
@@ -124,7 +140,7 @@ app.get('/login', (req, res) => {
 
 //does the main function of the whole app generating and assigning shortURL.
 app.post('/urls', (req, res) => {
-  console.log(req.body);
+  //console.log(req.body);
   const shortURL = generateRandomString();//generates a random string and asigns it to shortURL
   
   urlDatabase[shortURL] = req.body.longURL; //adds the value captured from ejs form for longURL and gives it the rangom string before saving
