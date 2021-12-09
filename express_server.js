@@ -63,8 +63,10 @@ const authenticateUser = function (email, password) {
 //if yes then grant access to pages
 //if no then ask to login or register
 
-function ensureAuthenticated(req, res, next) {
-  if(authenticateUser()) {//isAuthenticated()) {
+function ensureAuthenticated(req, res, next, email, password) {
+  // const email = req.body.email;
+  // const password = req.body.password;
+  if(authenticateUser(email, password)) {//isAuthenticated()) {
     return next();
   } else {
     res.status(403);
