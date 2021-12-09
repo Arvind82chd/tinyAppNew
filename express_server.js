@@ -18,7 +18,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "1234"
   },
  "user2RandomID": {
     id: "user2RandomID", 
@@ -40,7 +40,7 @@ function generateRandomString() { //picked this technique from a mentor last tim
   } return shortString;
 }
 
-const findUserByEmail = function (users, email) {
+const findUserByKey = function (email) {
   for (let user in users) {
     const userId = users[user];
     console.log(userId.email)
@@ -49,7 +49,14 @@ const findUserByEmail = function (users, email) {
     }
   } return false;
 }
-//console.log(findUserByEmail(users, ))
+//console.log(findUserByKey(users, ))
+
+const authenticateUser = function (email, password) {
+  const user = findUserByKey(email);
+  if (user && user.password === password) {
+    return user;
+  } return false;
+};
 
 // ALL GETs:
 
@@ -107,8 +114,8 @@ app.get('/register', (req, res) => {
 
 //Get login endpoint
 app.get('/login', (req, res) => {
-  const userId = req.cookies["user_id"];
-  const templateVars = { urls: urlDatabase, userId: userId, user: users[userId] };
+  //const userId = req.cookies["user_id"];
+  const templateVars = { user: null };//urls: urlDatabase, userId: userId, user: users[userId] };
 
   res.render('login', templateVars);
 });
@@ -146,12 +153,23 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect(`/urls`)
 });
 
-//post for cookie
+//post for login
 app.post('/login', (req, res) => {
-  const userId = req.cookies["user_id"];
-  const templateVars = { urls: urlDatabase, userId: userId, user: users[userId]}
-  res.cookie('user_id', templateVars);
-  res.redirect('/urls');
+  
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = findUserByKey(email);
+  if (!user) {
+    return res.status(403).send(`403 status code!!! User not found kindly register.`);
+  } else if (!authenticateUser(email, password)) {
+    return res.status(403).send(`403 status code!!! user id or password incorrect.`);
+  } 
+  
+  const templateVars = { urls: urlDatabase, userId: user.id, user: users[user] };
+  
+  res.cookie('user_id', user.id);
+  return res.redirect('/urls')
+   
 });
 
 
@@ -171,11 +189,9 @@ app.post('/register', (req, res) => {
     email: email, 
     password: password,
   };
-  
-  
   if (email === "" || password === "") {
     return res.status(400).send("400 status code");
-  } else if (!findUserByEmail(users, email)) {
+  } else if (!findUserByKey(email)) {
     users[userId] = newUser;
     //This one assigns the value to the cookie named user_id as random value as first registeration.
     res.cookie('user_id', userId);
@@ -185,15 +201,6 @@ app.post('/register', (req, res) => {
   
 });
 
-//Post login endpoint:
-  app.post('/login', (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  if (findUserByEmail(users, email)) {
-    return res.redirect('/urls')
-  } return res.status(400).send(`400 status code!!! User not found kindly register.`);
-  
-})
 
 //app.post('/')
 app.listen(PORT, () => {
