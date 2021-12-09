@@ -40,6 +40,17 @@ function generateRandomString() { //picked this technique from a mentor last tim
   } return shortString;
 }
 
+const findUserByEmail = function (users, email) {
+  for (let user in users) {
+    const userId = users[user];
+    console.log(userId.email)
+    if (userId.email === email) {
+      return userId;
+    }
+  } return false;
+}
+//console.log(findUserByEmail(users, ))
+
 // ALL GETs:
 
 // route handler for home page
@@ -50,6 +61,10 @@ app.get("/", (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase); //sends the urlDatabase to url.json path
 });
+
+app.get("/users.json", (req, res) => {
+  res.json(users);
+})
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n"); //sends this html body to hello page
@@ -82,6 +97,7 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 
+//Get register endpoint:
 app.get('/register', (req, res) => {
   console.log(req.cookies["user_id"]);
   const userId = req.cookies["user_id"];// needs to be defined as we are using it to identify in users database.
@@ -89,6 +105,10 @@ app.get('/register', (req, res) => {
   res.render('register', templateVars);
 });
 
+//Get login endpoint
+app.get('/login', (req, res) => {
+  res.render('login');
+});
 
 //POST:
 
@@ -142,17 +162,29 @@ app.post('/register', (req, res) => {
   const userId = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
-  const newUser = { id: userId, email: email, password: password};
-
-  users[userId] = newUser;
-
-  res.cookie('user_id', userId);//This one assigns the value to the cookie named user_id as random value as first registeration.
-  console.log(newUser);
-  console.log(users);
-  console.log(userId);
-  console.log(users[userId]);
-  res.redirect('/urls');
+  const newUser = { 
+    id: userId, 
+    email: email, 
+    password: password,
+  };
+  
+  
+  if (email === "" || password === "") {
+    return res.status(400).send("400 status code");
+  } else if (!findUserByEmail(users, email)) {
+    users[userId] = newUser;
+    //This one assigns the value to the cookie named user_id as random value as first registeration.
+    res.cookie('user_id', userId);
+    return res.redirect('/urls');
+  }
+    return res.status(400).send(`400 status code!!! User exists kindly login`);
+  
 });
+
+// //Post login endpoint:
+// app.post('/login', (req, res) => {
+//   res.redirect
+// })
 
 //app.post('/')
 app.listen(PORT, () => {
