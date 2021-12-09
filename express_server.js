@@ -107,7 +107,10 @@ app.get('/register', (req, res) => {
 
 //Get login endpoint
 app.get('/login', (req, res) => {
-  res.render('login');
+  const userId = req.cookies["user_id"];
+  const templateVars = { urls: urlDatabase, userId: userId, user: users[userId] };
+
+  res.render('login', templateVars);
 });
 
 //POST:
@@ -145,7 +148,8 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //post for cookie
 app.post('/login', (req, res) => {
-  const templateVars = { urls: urlDatabase, userId: req.body.userId, user: users[userId]}
+  const userId = req.cookies["user_id"];
+  const templateVars = { urls: urlDatabase, userId: userId, user: users[userId]}
   res.cookie('user_id', templateVars);
   res.redirect('/urls');
 });
@@ -181,10 +185,15 @@ app.post('/register', (req, res) => {
   
 });
 
-// //Post login endpoint:
-// app.post('/login', (req, res) => {
-//   res.redirect
-// })
+//Post login endpoint:
+  app.post('/login', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (findUserByEmail(users, email)) {
+    return res.redirect('/urls')
+  } return res.status(400).send(`400 status code!!! User not found kindly register.`);
+  
+})
 
 //app.post('/')
 app.listen(PORT, () => {
