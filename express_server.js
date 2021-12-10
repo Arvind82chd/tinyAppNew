@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser'); //this converts the request body from buffer into a string
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 5000;
 
@@ -26,6 +27,7 @@ const users = {
     password: "1"
   }
 }
+console.log(users);
 
 const urlDatabase = {
   b6UTxQ: {
@@ -62,7 +64,10 @@ const findUserByKey = function (email) {
 //Check password function
 const authenticateUser = function (email, password) {
   const user = findUserByKey(email);
-  if (user && user.password === password) {
+  console.log(bcrypt.compareSync(password, user["password"]));
+  if (user && bcrypt.compareSync(password, user["password"])) 
+  //if (user && user.password === password) 
+  {
     return user;
   } return false;
 };
@@ -88,7 +93,8 @@ function checkPermission(req) {
       data: null,
       error: 'URL does not exist.'
     };
-  } else if (urlDatabase[shortUrl]['userID'] !== userId) {
+  } else if (urlDatabase[shortUrl]['userId'] !== userId)
+ { console.log(urlDatabase[shortUrl], userId)
     return {
       data: null, 
       error: "You do not have permission."
@@ -149,9 +155,11 @@ app.get('/urls/new', ensureAuthenticated, (req, res) => {
 app.get('/urls/:shortURL', ensureAuthenticated, (req, res) => { //:notation to represent the value of shorturl in browser path
   const shortURL = req.params.shortURL; //params for getting the value during get
   const userId = req.cookies["user_id"];
-  const result = urlsForUser(userId, urlDatabase)
-  const longURL = result[shortURL];
-  const templateVars = { shortURL: shortURL, longURL: longURL, user: users[userId] }; //always use [] when using variable to fetch value in object.
+  const result = urlsForUser(userId, urlDatabase[shortURL])
+  console.log(urlsForUser(userId, urlDatabase))
+  //const longURL = result[shortURL];
+  const longUrl = urlDatabase[shortURL]["longURL"];
+  const templateVars = { shortURL, url: longUrl, user: users[userId] }; //always use [] when using variable to fetch value in object.
   res.render('urls_show', templateVars);
 });
 
@@ -213,13 +221,17 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;//use params when picking up values from only the path as parameters
   const result = checkPermission(req);
+  console.log(checkPermission(req));
+  const longURL = req.body.newURL;
+  const userId = req.cookies["user_id"];
   if (result.error) {
     return res.send(result.error);
+     
   }
-    if (req.body.longURL !== "") {
+    else if (longURL !== "") {
       urlDatabase[shortURL] = {
-        longURL: req.body.longURL,
-        userID: req.cookies["user_id"],
+        longURL: longURL,
+        userID: userId,
       };
     }
   //const longURL = req.body.newURL;
@@ -236,6 +248,7 @@ app.post('/login', (req, res) => {
   
   const email = req.body.email;
   const password = req.body.password;
+  //const hashedPassword = bcrypt.hashSync(password, 10);
   const user = findUserByKey(email);
   console.log("I am here")
   if (!user) {
@@ -263,12 +276,13 @@ app.post('/register', (req, res) => {
   const userId = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const newUser = { 
     id: userId, 
     email: email, 
-    password: password,
+    password: hashedPassword,
   };
-  if (email === "" || password === "") {
+  if (email === "" || hashedPassword === "") {
     return res.status(400).send("400 status code");
   } else if (!findUserByKey(email)) {
     users[userId] = newUser;
