@@ -1,13 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser'); //this converts the request body from buffer into a string
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
+const cookieSession = require('cookie-session');
+const { generateRandomString, findUserByKey, authenticateUser, ensureAuthenticated, checkPermission, urlsForUser } = require('./helpers');
 const app = express();
 const PORT = 5000;
 
 app.set("view engine", "ejs"); //ejs set as view engine
 app.use(bodyParser.urlencoded({extended: true})); //will add data to the req obj under key: body hence input field data will be available in req.body.longURL which canbe stored
-app.use(cookieParser());
+//app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}))
 
 // Database:
 // let urlDatabase = {
@@ -40,82 +46,6 @@ const urlDatabase = {
   }
 };
 
-//Functions:
-
-function generateRandomString() { //picked this technique from a mentor last time
-  const sampleString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-  let shortString = '';
-  for (let i = 0; i < 6; i++) {
-    shortString += sampleString.charAt(Math.floor(Math.random() * 62));
-  } return shortString;
-};
-
-const findUserByKey = function (email) {
-  for (let user in users) {
-    const userId = users[user];
-   // console.log(userId.email)
-    if (userId.email === email) {
-      return userId;
-    }
-  } return false;
-};
-
-//Check password function
-const authenticateUser = function (email, password) {
-  const user = findUserByKey(email);
-  console.log(bcrypt.compareSync(password, user["password"]));
-  if (user && bcrypt.compareSync(password, user["password"])) 
-  //if (user && user.password === password) 
-  {
-    return user;
-  } return false;
-};
-
-//Check Permissions function:
-
-function ensureAuthenticated(req, res, next) {
-  const user = req.cookies["user_id"];
-  if (user) {
-    next();
-  } else {
-    res.redirect('/login')
-  }
-};
-
-//Check if user permited to change:
-
-function checkPermission(req) {
-  const userId = req.cookies["user_id"];
-  const shortUrl = req.params.shortURL;
-  if (!urlDatabase[shortUrl]) {
-    return { 
-      data: null,
-      error: 'URL does not exist.'
-    };
-  } else if (urlDatabase[shortUrl]['userId'] !== userId)
- { console.log(urlDatabase[shortUrl], userId)
-    return {
-      data: null, 
-      error: "You do not have permission."
-    };
-  }
-  return {
-    data: shortUrl, 
-    error: null,
-  }
-};
-
-//Function to find urls out of database
-const urlsForUser = function(id, obj) {
-  const tempObj = {};
-  for (let i in obj) {
-    if (obj[i]["userID"] === id) {
-      tempObj[i] = urlDatabase[i]["longURL"];
-    }
-  }
-  return tempObj
-}
 
 
 // ALL GETs:
@@ -138,7 +68,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get('/urls', ensureAuthenticated, (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const result = urlsForUser(userId, urlDatabase);
   const templateVars = { urls: result, user: users[userId] };//defines the database object as a variable templateVars.
   return res.render('urls_index', templateVars); //renders the urls_index page to /urls path
@@ -146,7 +76,7 @@ app.get('/urls', ensureAuthenticated, (req, res) => {
 
 // route for rendering urls_new.ejs
 app.get('/urls/new', ensureAuthenticated, (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const templateVars = {urls: urlDatabase, userId: userId, user: users[userId] };
   res.render('urls_new', templateVars);
 });
@@ -154,7 +84,7 @@ app.get('/urls/new', ensureAuthenticated, (req, res) => {
 // second route
 app.get('/urls/:shortURL', ensureAuthenticated, (req, res) => { //:notation to represent the value of shorturl in browser path
   const shortURL = req.params.shortURL; //params for getting the value during get
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const result = urlsForUser(userId, urlDatabase[shortURL])
   console.log(urlsForUser(userId, urlDatabase))
   //const longURL = result[shortURL];
@@ -172,7 +102,7 @@ app.get('/u/:shortURL', ensureAuthenticated, (req, res) => {
 //Get register endpoint:
 app.get('/register', (req, res) => {
   //console.log(req.cookies["user_id"]);
-  const userId = req.cookies["user_id"];// needs to be defined as we are using it to identify in users database.
+  const userId = req.session.user_id;// needs to be defined as we are using it to identify in users database.
   const templateVars = { urls: urlDatabase, userId: userId, user: users[userId] };
   res.render('register', templateVars);
 });
@@ -194,7 +124,7 @@ app.post('/urls', (req, res) => {
   
   urlDatabase[shortURL] = {
     longURL: req.body.longURL, 
-    userId: req.cookies["user_id"]
+    userId: req.session.user_id
   }; //adds the value captured from ejs form for longURL and gives it the rangom string before saving
   
   //urlDatabase = { shortURL: shortURL, longURL: req.body.longURL }; //updates the urlDatabase
@@ -223,7 +153,7 @@ app.post('/urls/:shortURL', (req, res) => {
   const result = checkPermission(req);
   console.log(checkPermission(req));
   const longURL = req.body.newURL;
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   if (result.error) {
     return res.send(result.error);
      
@@ -258,7 +188,7 @@ app.post('/login', (req, res) => {
   } 
   console.log("I am here too");
   
-  res.cookie('user_id', user.id);
+  req.session.user_id = user.id;
   return res.redirect('/urls')
    
 });
@@ -266,7 +196,8 @@ app.post('/login', (req, res) => {
 
 //post to logout
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
+  //res.clearCookie('user_id');
   res.redirect('/urls');
 
 });
@@ -287,7 +218,7 @@ app.post('/register', (req, res) => {
   } else if (!findUserByKey(email)) {
     users[userId] = newUser;
     //This one assigns the value to the cookie named user_id as random value as first registeration.
-    res.cookie('user_id', userId);
+    req.session.user_id = userId;
     return res.redirect('/urls');
   }
     return res.status(400).send(`400 status code!!! User exists kindly login`);
