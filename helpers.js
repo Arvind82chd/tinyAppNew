@@ -1,18 +1,5 @@
 const bcrypt = require('bcryptjs');
 
-// const users = {
-//   "userRandomID": {
-//     id: "userRandomID",
-//     email: "user@example.com",
-//     password: "purple-monkey-dinosaur"
-//   },
-//   "user2RandomID": {
-//     id: "user2RandomID",
-//     email: "user2@example.com",
-//     password: "dishwasher-funk"
-//   }
-// };
-
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -40,6 +27,7 @@ const urlDatabase = {
 
 //Functions:
 
+//Generates random string for assigning userid and shorturls
 function generateRandomString() { //picked this technique from a mentor last time
   const sampleString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -49,6 +37,7 @@ function generateRandomString() { //picked this technique from a mentor last tim
   } return shortString;
 }
 
+//Finds user by email checks if user present already
 const findUserByKey = function(email) {
   for (let user in users) {
     const userId = users[user];
@@ -62,7 +51,7 @@ const findUserByKey = function(email) {
 //Check password function
 const authenticateUser = function(email, password) {
   const user = findUserByKey(email);
-  console.log(user[0], user[1]);
+  
   if (user.id === "userRandomID" || user.id === "user2RandomID") {
     if (user.password === password) {
       return user;
@@ -73,12 +62,8 @@ const authenticateUser = function(email, password) {
   } return false;
 };
 
-console.log(authenticateUser('user@example.com', '1234'));
 
-
-
-//Check Permissions function:
-
+//Check Sessions cookie presence function:
 function ensureAuthenticated(req, res, next) {
   const user = req.session.user_id;
   if (user) {
@@ -88,38 +73,42 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
+
 //Check if user permited to change:
 
-function checkPermission(req) {
-  const userId = req.session.user_id;
-  const shortUrl = req.params.shortURL;
-  if (!urlDatabase[shortUrl]) {
-    return {
-      data: null,
-      error: 'URL does not exist.'
-    };
-  } else if (urlDatabase[shortUrl]['userId'] !== userId) {
-    console.log(urlDatabase[shortUrl], userId);
-    return {
-      data: null,
-      error: "You do not have permission."
-    };
-  }
-  return {
-    data: shortUrl,
-    error: null,
-  };
-}
+// function checkPermission(req) {
+//   const userId = req.session.user_id;
+//   const shortUrl = req.params.shortURL;
+//   if (!urlDatabase[shortUrl]) {
+//     return {
+//       data: null,
+//       error: 'URL does not exist.'
+//     };
+//   } else if (urlDatabase[shortUrl]['userId'] !== userId) {
+//     console.log(urlDatabase[shortUrl], userId);
+//     return {
+//       data: null,
+//       error: "You do not have permission."
+//     };
+//   }
+//   return {
+//     data: shortUrl,
+//     error: null,
+//   };
+// }
 
-//Function to find urls out of database
-const urlsForUser = function(id, obj) {
-  const tempObj = {};
-  for (let i in obj) {
-    if (obj[i]["userID"] === id) {
-      tempObj[i] = urlDatabase[i]["longURL"];
-    }
-  }
-  return tempObj;
-};
+// console.log(checkPermission());
 
-module.exports = { generateRandomString, findUserByKey, authenticateUser, ensureAuthenticated, checkPermission, urlsForUser };
+// //Function to find urls out of database
+// const urlsForUser = function(id, obj) {
+//   const tempObj = {};
+//   for (let i in obj) {
+
+//     if (obj[i]["userID"] === id) {
+//       tempObj[i] = urlDatabase[i]["longURL"];
+//     }
+//   }
+//   return tempObj;
+// };
+
+module.exports = { generateRandomString, findUserByKey, authenticateUser, ensureAuthenticated,  };
