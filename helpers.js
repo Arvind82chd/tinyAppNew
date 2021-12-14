@@ -38,19 +38,19 @@ function generateRandomString() { //picked this technique from a mentor last tim
 }
 
 //Finds user by email checks if user present already
-const findUserByKey = function(email) {
+const findUserByKey = function(users, email) {
   for (let user in users) {
     const userId = users[user];
     // console.log(userId.email)
-    if (userId.email === email) {
+    if (userId['email'] === email) {
       return userId;
     }
   } return false;
 };
 
 //Check password function
-const authenticateUser = function(email, password) {
-  const user = findUserByKey(email);
+const authenticateUser = function(email, password, users) {
+  const user = findUserByKey(users, email);
   
   if (user.id === "userRandomID" || user.id === "user2RandomID") {
     if (user.password === password) {

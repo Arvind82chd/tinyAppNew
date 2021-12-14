@@ -133,9 +133,9 @@ app.get('/urls/:shortURL', ensureAuthenticated, (req, res) => {
 
 
 //Get endpoint to go to longURL
-app.get('/u/:shortURL', ensureAuthenticated, (req, res) => {
+app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL; 
+  const longURL = urlDatabase[shortURL]['longURL']; 
   res.redirect(longURL);
 });
 
@@ -228,11 +228,11 @@ app.post('/urls/:shortURL', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user = findUserByKey(email);
+  const user = findUserByKey(users, email);
   if (!user) {
     return res.status(403).send(`403 status code!!! User not found kindly register.`);
     
-  } else if (!authenticateUser(email, password)) {
+  } else if (!authenticateUser(email, password, users)) {
     return res.status(403).send(`403 status code!!! user id or password incorrect.`);
   }
   req.session.user_id = user.id;
@@ -262,7 +262,7 @@ app.post('/register', (req, res) => {
   };
   if (email === "" || hashedPassword === "") {
     return res.status(400).send("400 status code");
-  } else if (!findUserByKey(email)) {
+  } else if (!findUserByKey(users, email)) {
     users[userId] = newUser;
     req.session.user_id = userId;
     return res.redirect('/urls');
