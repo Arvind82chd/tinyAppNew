@@ -74,41 +74,6 @@ function ensureAuthenticated(req, res, next) {
 }
 
 
-//Check if user permited to change:
 
-// function checkPermission(req) {
-//   const userId = req.session.user_id;
-//   const shortUrl = req.params.shortURL;
-//   if (!urlDatabase[shortUrl]) {
-//     return {
-//       data: null,
-//       error: 'URL does not exist.'
-//     };
-//   } else if (urlDatabase[shortUrl]['userId'] !== userId) {
-//     console.log(urlDatabase[shortUrl], userId);
-//     return {
-//       data: null,
-//       error: "You do not have permission."
-//     };
-//   }
-//   return {
-//     data: shortUrl,
-//     error: null,
-//   };
-// }
-
-// console.log(checkPermission());
-
-// //Function to find urls out of database
-// const urlsForUser = function(id, obj) {
-//   const tempObj = {};
-//   for (let i in obj) {
-
-//     if (obj[i]["userID"] === id) {
-//       tempObj[i] = urlDatabase[i]["longURL"];
-//     }
-//   }
-//   return tempObj;
-// };
 
 module.exports = { generateRandomString, findUserByKey, authenticateUser, ensureAuthenticated,  };
