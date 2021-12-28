@@ -69,7 +69,9 @@ function ensureAuthenticated(req, res, next) {
   if (user) {
     next();
   } else {
-    res.redirect('/login');
+    //return false;
+    return res.send(`Kindly login to access this page <a href='/login'>here</a>.`);
+    //res.redirect('/login');
   }
 }
 

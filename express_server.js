@@ -49,6 +49,7 @@ const urlDatabase = {
 function checkPermission(req) {
   const userId = req.session.user_id;
   const shortUrl = req.params.shortURL;
+  console.log(urlDatabase[shortUrl]);
   if (!urlDatabase[shortUrl]) {
     return {
       data: null,
@@ -82,8 +83,9 @@ const urlsForUser = function(id, obj) {
 // ALL GETs:
 
 //Route handler for home page
-app.get("/", (req, res) => {
-  res.send("hello!"); 
+app.get("/", ensureAuthenticated, (req, res) => {
+ 
+  res.redirect('/urls' );
 });
 
 
@@ -115,17 +117,25 @@ app.get('/urls', ensureAuthenticated, (req, res) => {
 
 
 //Route for rendering urls_new.ejs
-app.get('/urls/new', ensureAuthenticated, (req, res) => {
+app.get('/urls/new',  (req, res) => {
+  const user = req.session.user_id;
+  if (user) {
+    const templateVars = {urls: urlDatabase, userId: userId, user: users[userId] };
+    return res.render('urls_new', templateVars);
+  } else {
+    res.redirect('/login');
+  }
   const userId = req.session.user_id;
-  const templateVars = {urls: urlDatabase, userId: userId, user: users[userId] };
-  res.render('urls_new', templateVars);
+  
 });
 
 
 // Get route for shortURL
 app.get('/urls/:shortURL', ensureAuthenticated, (req, res) => { 
+ 
   const shortURL = req.params.shortURL; 
   const userId = req.session.user_id;
+  console.log(urlDatabase[shortURL]['longURL']);
   const longUrl = urlDatabase[shortURL]['longURL'];
   const templateVars = { shortURL, url: longUrl, user: users[userId] }; 
   res.render('urls_show', templateVars);
@@ -170,7 +180,7 @@ app.post('/urls', (req, res) => {
   if (ensureAuthenticated) { //checks if non login user accesses /urls from command line
     res.redirect(`/urls`);
     return;
-  }
+  }     return res.send(`Kindly login to access this page <a href='/login'>here</a>.`);
   res.redirect('/login');
 });
 
@@ -261,7 +271,7 @@ app.post('/register', (req, res) => {
     password: hashedPassword,
   };
   if (email === "" || hashedPassword === "") {
-    return res.status(400).send("400 status code");
+    return res.status(400).send("400 status code, Invalid userId or password");
   } else if (!findUserByKey(users, email)) {
     users[userId] = newUser;
     req.session.user_id = userId;
