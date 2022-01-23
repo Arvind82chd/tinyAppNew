@@ -1,34 +1,29 @@
 const bcrypt = require('bcryptjs');
 
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "1234"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "1"
+
+//Function to check if userid matching urlId
+function checkPermission(urlDatabase, userId, shortUrl) { //%added parameters
+  
+  if (!urlDatabase[shortUrl]) {
+    return {
+      data: null,
+      error: 'URL does not exist.'
+    }
+  } 
+    if (userId !== urlDatabase[shortUrl].userID) {
+    return {
+      data: null,
+      error: "You do not have permission."
+    }
+  }
+  return {
+    data: shortUrl,
+    error: null,
   }
 };
-
-
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "userRandomID"
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "user2RandomID"
-  }
-};
-
-//Functions:
 
 //Generates random string for assigning userid and shorturls
-function generateRandomString() { //picked this technique from a mentor last time
+function generateRandomString() { 
   const sampleString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   let shortString = '';
@@ -38,7 +33,7 @@ function generateRandomString() { //picked this technique from a mentor last tim
 }
 
 //Finds user by email checks if user present already
-const findUserByKey = function(users, email) {
+const findUserByEmail = function(users, email) {
   for (let user in users) {
     const userId = users[user];
     // console.log(userId.email)
@@ -50,7 +45,7 @@ const findUserByKey = function(users, email) {
 
 //Check password function
 const authenticateUser = function(email, password, users) {
-  const user = findUserByKey(users, email);
+  const user = findUserByEmail(users, email);
   
   if (user.id === "userRandomID" || user.id === "user2RandomID") {
     if (user.password === password) {
@@ -76,6 +71,17 @@ function ensureAuthenticated(req, res, next) {
 }
 
 
+//Function to find urls out of Object database using key
+const urlsForUser = function(id, obj) { //% added urlDatabase
+  const tempObj = {};
+  for (let i in obj) {
+    if (obj[i]["userID"] === id) {
+      tempObj[i] = obj[i]["longURL"];
+    }
+  }
+  return tempObj;
+};
 
 
-module.exports = { generateRandomString, findUserByKey, authenticateUser, ensureAuthenticated,  };
+
+module.exports = { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, checkPermission, urlsForUser };
