@@ -64,9 +64,7 @@ function ensureAuthenticated(req, res, next) {
   if (user) {
     next();
   } else {
-    //return false;
     return res.send(`Kindly login to access this page <a href='/login'>here</a>.`);
-    //res.redirect('/login');
   }
 }
 
@@ -75,8 +73,6 @@ function ensureAuthenticatedRedirect(req, res, next) {
   if (user) {
     next();
   } else {
-    //return false;
-    //return res.send(`Kindly login to access this page <a href='/login'>here</a>.`);
     res.redirect('/login');
   }
 }

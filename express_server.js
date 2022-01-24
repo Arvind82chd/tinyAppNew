@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser'); 
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
-const { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, ensureAuthenticatedRedirect, checkPermi, ensureAuthenticated1ssion, urlsForUser } = require('./helpers');
+const { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, ensureAuthenticatedRedirect, checkPermission, urlsForUser } = require('./helpers');
 const app = express();
 const PORT = 5000;
 
