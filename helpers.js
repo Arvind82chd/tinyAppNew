@@ -70,7 +70,7 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
-function ensureAuthenticated1(req, res, next) {
+function ensureAuthenticatedRedirect(req, res, next) {
   const user = req.session.user_id;
   if (user) {
     next();
@@ -95,4 +95,4 @@ const urlsForUser = function(id, obj) { //% added urlDatabase
 
 
 
-module.exports = { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, ensureAuthenticated1, checkPermission, urlsForUser };
+module.exports = { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, ensureAuthenticatedRedirect, checkPermission, urlsForUser };
