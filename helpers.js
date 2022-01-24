@@ -70,6 +70,17 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
+function ensureAuthenticated1(req, res, next) {
+  const user = req.session.user_id;
+  if (user) {
+    next();
+  } else {
+    //return false;
+    //return res.send(`Kindly login to access this page <a href='/login'>here</a>.`);
+    res.redirect('/login');
+  }
+}
+
 
 //Function to find urls out of Object database using key
 const urlsForUser = function(id, obj) { //% added urlDatabase
@@ -84,4 +95,4 @@ const urlsForUser = function(id, obj) { //% added urlDatabase
 
 
 
-module.exports = { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, checkPermission, urlsForUser };
+module.exports = { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, ensureAuthenticated1, checkPermission, urlsForUser };

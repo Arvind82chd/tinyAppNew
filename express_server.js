@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser'); 
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
-const { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, checkPermission, urlsForUser } = require('./helpers');
+const { generateRandomString, findUserByEmail, authenticateUser, ensureAuthenticated, ensureAuthenticated1, checkPermission, urlsForUser } = require('./helpers');
 const app = express();
 const PORT = 5000;
 
@@ -48,7 +48,7 @@ const urlDatabase = {
 // ALL GETs:
 
 //Route handler for home page
-app.get("/", ensureAuthenticated, (req, res) => {
+app.get("/", ensureAuthenticated1, (req, res) => {
  
   res.redirect('/urls' );
 });
@@ -82,7 +82,7 @@ app.get('/urls', ensureAuthenticated, (req, res) => {
 
 
 //Route for rendering urls_new.ejs
-app.get('/urls/new', (req, res) => {
+app.get('/urls/new',ensureAuthenticated1, (req, res) => {
   const userId = req.session.user_id;
   if (userId) {
     const templateVars = { urls: urlDatabase, userId: userId, user: users[userId] };
@@ -104,7 +104,7 @@ app.get('/urls/:shortURL', ensureAuthenticated, (req, res) => {
     const longUrl = urlDatabase[shortURL]['longURL'];
     const templateVars = { shortURL, url: longUrl, user: users[userId] }; 
     res.render('urls_show', templateVars);
-  } else res.send(permission.error)
+  } else res.send(results.error)
 });
 
 
